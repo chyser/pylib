@@ -1,6 +1,93 @@
-import tkinter as tk
-from tkinter import ttk
+#!/usr/bin/env python
+"""
+"""
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import pylib.osscripts as oss
+
+try:
+    import tkinter as tk
+    from tkinter import ttk
+except ImportError:
+    import Tkinter as tk
+    import ttk
+    
+#-------------------------------------------------------------------------------
+def main(argv):
+#-------------------------------------------------------------------------------
+    """ usage: 
+    """
+    args, opts = oss.gopt(argv[1:], [], [], main.__doc__ + __doc__)
+    a = []
+    for i in range(7):
+        a.append((i, i))
+    
+    
+    m = Menu("Select Int")
+    while 1:
+        v = m.run(a)
+        print("sel:", v)
+    
+        if v == 2:
+            d = Menu("Select Letter")
+            x = d.run("abcdef")
+            print('x:', x)
+    
+        elif v == 1:
+            d = Dialog("Boo")
+            x = d.run({'s':'boo', 'b': True, 'c': 3.4})
+            if x:
+                print(x['s'], x['b'], x['c'])
+    
+        elif v == 3:
+    
+            d = Dialog1("cool")
+    
+            tp = [
+                [tk.Button(d.root, text="press")],
+                [tk.Entry(d.root, text=""), tk.Entry(d.root, text="cat")],
+                [tk.Button(d.root, text="ok"), tk.Button(d.root, text="cancel")],
+            ]
+    
+            d.run(tp)
+    
+            d = Dialog2("Test 2")
+    
+            def tp():
+                print('here')
+    
+            d.mkButton('print', tp)
+            d.nextRow()
+    
+            d.mkLabel("v1")
+            d.mkValue("v1", "boo", ro=True)
+            d.mkLabel("v2")
+            d.mkValue("v2")
+    
+            d.nextRow()
+            d.mkLabel("v3")
+            d.mkValue("v3")
+            d.mkLabel("v4")
+            d.mkValue("v4")
+    
+            ans = d.run()
+    
+            if ans:
+                print(ans['v1'])
+                print(ans['v2'])
+                print(ans['v3'])
+                print(ans['v4'])
+    
+        elif v == 4:
+            break    
+    
+    oss.exit(0)
+        
+    
 #------------------------------------------------------------------------------
 class Menu(object):
 #------------------------------------------------------------------------------
@@ -185,14 +272,7 @@ class Dialog2(BaseDialog):
     def run(self):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.nextRow()
-
-        print(self.maxc)
-        if self.maxc % 2 == 0:
-            ok = 0
-            cancel = self.maxc - 1
-        else:
-            ok = 1
-            cancel = self.maxc - 2
+        ok, cancel = (0, self.maxc - 1) if self.maxc % 2 == 0 else (1, self.maxc - 2) 
 
         ttk.Button(self.root, text="Ok", command=self.finish).grid(column=ok, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
         ttk.Button(self.root, text="Cancel", command=self.root.destroy).grid(column=cancel, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
@@ -215,68 +295,7 @@ class Dialog2(BaseDialog):
             self.dct[f] = v.get()
 
         return cb
+
         
-
-
-a = []
-for i in range(7):
-    a.append((i, i))
-
-
-m = Menu("Select Int")
-while 1:
-    v = m.run(a)
-    print("sel:", v)
-
-    if v == 2:
-        d = Menu("Select Letter")
-        x = d.run("abcdef")
-        print('x:', x)
-
-    elif v == 1:
-        d = Dialog("Boo")
-        x = d.run({'s':'boo', 'b': True, 'c': 3.4})
-        if x:
-            print(x['s'], x['b'], x['c'])
-
-    elif v == 3:
-
-        d = Dialog1("cool")
-
-        tp = [
-            [tk.Button(d.root, text="press")],
-            [tk.Entry(d.root, text=""), tk.Entry(d.root, text="cat")],
-            [tk.Button(d.root, text="ok"), tk.Button(d.root, text="cancel")],
-        ]
-
-        d.run(tp)
-
-        d = Dialog2("Test 2")
-
-        def tp():
-            print('here')
-
-        d.mkButton('print', tp)
-        d.nextRow()
-
-        d.mkLabel("v1")
-        d.mkValue("v1", "boo", ro=True)
-        d.mkLabel("v2")
-        d.mkValue("v2")
-
-        d.nextRow()
-        d.mkLabel("v3")
-        d.mkValue("v3")
-        d.mkLabel("v4")
-        d.mkValue("v4")
-
-        ans = d.run()
-
-        if ans:
-            print(ans['v1'])
-            print(ans['v2'])
-            print(ans['v3'])
-            print(ans['v4'])
-
-    elif v == 4:
-        break
+if __name__ == "__main__":
+    main(oss.argv)
