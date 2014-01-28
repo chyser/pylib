@@ -4,7 +4,7 @@
 
 from __future__ import print_function
 from __future__ import division
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import pylib.osscripts as oss
@@ -33,8 +33,9 @@ def main(argv):
         
     gcal = GoogleCalendar('chrish6141960@gmail.com', 'sariboodo2')
     
-    for i in gcal.userCalendars():
-        print(i.title.text)
+    for cal in gcal.userCalendars():
+        print(cal.title.text)
+        print(cal.content.src)
 
     gcal.getEntries()
         
@@ -75,11 +76,21 @@ class GoogleCalendar(object):
         end_date = '2014-01-31'
         
         query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
-        feed = self.client.GetCalendarEventFeed(q=query)
         
-        for ae in feed.entry:
-            print('\t%s' % ae.title.text)
-
+        for cal in self.userCalendars():
+            u = cal.content.src
+            print('\n', cal.title.text)
+            feed = self.client.GetCalendarEventFeed(u, q=query, max_results='999')
+            
+            for ae in feed.entry:
+                print('\t%s' % ae.title.text)
+                a = ae.content.text
+                if a:
+                    print(a)
+                for w in ae.when:
+                    print('\t', w.start, w.end)
+                #print(dir(ae.when[0].attributes))
+                
           
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def __str__(self):
