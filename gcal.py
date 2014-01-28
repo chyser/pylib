@@ -31,7 +31,7 @@ def main(argv):
     args, opts = oss.gopt(argv[1:], [], [], main.__doc__ + __doc__)
     
         
-    gcal = GoogleCalendar('chrish6141960@gmail.com', 'sariboodo2')
+    gcal = GoogleCalendar(args[0], args[1])
     
     for cal in gcal.userCalendars():
         print(cal.title.text)
