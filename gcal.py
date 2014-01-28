@@ -21,6 +21,7 @@ import getopt
 import sys
 import string
 import time
+import datetime
 
 
 #-------------------------------------------------------------------------------
@@ -41,7 +42,6 @@ def main(argv):
         
     oss.exit(0)
         
-    
 
 #-------------------------------------------------------------------------------
 class GoogleCalendar(object):
@@ -50,7 +50,6 @@ class GoogleCalendar(object):
     def __init__(self, email, password):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         object.__init__(self)
-        
         self.client = gdata.calendar.client.CalendarClient(source='Google-Calendar-1.0')
         self.client.ClientLogin(email, password, self.client.source);
 
@@ -67,13 +66,12 @@ class GoogleCalendar(object):
     
         feed = self.client.GetAllCalendarsFeed()
         return feed.entry
-        
     
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def getEntries(self):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         start_date = '2014-01-01'
-        end_date = '2014-01-31'
+        end_date = '2014-02-01'
         
         query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
         
@@ -89,14 +87,18 @@ class GoogleCalendar(object):
                     print(a)
                 for w in ae.when:
                     print('\t', w.start, w.end)
-                #print(dir(ae.when[0].attributes))
+                    print('\t', cvtDateTime(w.start), cvtDateTime(w.end))
                 
           
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def __str__(self):
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        return str(self.__dict__)
-        
+#-------------------------------------------------------------------------------
+def cvtDateTime(s):
+#-------------------------------------------------------------------------------
+    # 2014-01-15T08:00:00.000-05:00
+    try:
+        a, b = s.rsplit('-', 1)
+        return datetime.datetime.strptime(a, "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        return datetime.datetime.strptime(s, "%Y-%m-%d")
     
         
 if __name__ == "__main__":
