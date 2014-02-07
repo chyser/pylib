@@ -76,9 +76,33 @@ class GoogleCalendar(object):
         query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
         
         for cal in self.userCalendars():
-            u = cal.content.src
+            user = cal.content.src
             print('\n', cal.title.text)
-            feed = self.client.GetCalendarEventFeed(u, q=query, max_results='999')
+            feed = self.client.GetCalendarEventFeed(user, q=query, max_results='999')
+            
+            for ae in feed.entry:
+                print('\t%s' % ae.title.text)
+                a = ae.content.text
+                if a:
+                    print(a)
+                for w in ae.when:
+                    print('\t', w.start, w.end)
+                    print('\t', cvtDateTime(w.start), cvtDateTime(w.end))
+                
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def getEntry(self, startDate=None, endDate=None):
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        if startDate is None:
+            start_date = '2014-01-01'
+            
+        end_date = '2014-02-01'
+        
+        query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
+        
+        for cal in self.userCalendars():
+            user = cal.content.src
+            print('\n', cal.title.text)
+            feed = self.client.GetCalendarEventFeed(user, q=query, max_results='999')
             
             for ae in feed.entry:
                 print('\t%s' % ae.title.text)
