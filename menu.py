@@ -22,6 +22,7 @@ def main(argv):
     """ usage: 
     """
     args, opts = oss.gopt(argv[1:], [], [], main.__doc__ + __doc__)
+
     a = []
     for i in range(7):
         a.append((i, i))
@@ -92,22 +93,32 @@ def main(argv):
 class Menu(object):
 #------------------------------------------------------------------------------
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    def __init__(self, title):
+    def __init__(self, title, geo=None):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.ans = None
         self.title = title
+	self.geo = geo
+    
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    def syncGeo(self):
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        self.geo = self.root.geometry()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def run(self, a, func=str):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.root = tk.Tk()
+	if not self.geo:
+	    self.geo = "+200+200"
+	    
+	self.root.geometry(self.geo)
         self.root.title(self.title)
 
         for i in a:
             if isinstance(i, tuple):
-                ttk.Button(self.root, text=func(i[0]), command=self.callback(i[1])).pack()
+                ttk.Button(self.root, text=func(i[0]), command=self.callback(i[1])).pack(expand=1, fill=tk.BOTH, padx=4, pady=0)
             else:
-                ttk.Button(self.root, text=func(i), command=self.callback(i)).pack()
+                ttk.Button(self.root, text=func(i), command=self.callback(i)).pack(expand=1, fill=tk.BOTH, padx=4, pady=0)
 
         self.root.mainloop()
         return self.ans
@@ -117,6 +128,7 @@ class Menu(object):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         def cb():
             self.ans = i
+            self.geo = self.root.geometry()
             self.root.destroy()
 
         return cb	
@@ -126,21 +138,23 @@ class Menu(object):
 class BaseDialog(object):
 #------------------------------------------------------------------------------
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    def __init__(self, title):
+    def __init__(self, title, ok='Ok', cancel='Cancel', geo=None):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.root = tk.Tk()
         self.root.title(title)
+	self.ans = None
+	self.ok = ok
+	self.cancel = cancel
+
+	if geo is None:
+	    geo="+200+200"
+
+	self.root.geometry(geo)
 
 
 #------------------------------------------------------------------------------
 class Dialog(BaseDialog):
 #------------------------------------------------------------------------------
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    def __init__(self, title):
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        BaseDialog.__init__(self, title)
-        self.ans = None
-
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def mkEntry(self, f, sv, row):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -175,8 +189,8 @@ class Dialog(BaseDialog):
 
             row += 1
 
-        ttk.Button(self.root, text="Ok", command=self.finish).grid(column=0, row=row, sticky=tk.N+tk.S+tk.E+tk.W)
-        ttk.Button(self.root, text="Cancel", command=self.root.destroy).grid(column=1, row=row, sticky=tk.N+tk.S+tk.E+tk.W)
+        ttk.Button(self.root, text=self.ok, command=self.finish).grid(column=0, row=row, sticky=tk.N+tk.S+tk.E+tk.W)
+        ttk.Button(self.root, text=self.cancel, command=self.root.destroy).grid(column=1, row=row, sticky=tk.N+tk.S+tk.E+tk.W)
                 
         self.root.mainloop()
         return self.ans
@@ -189,6 +203,12 @@ class Dialog(BaseDialog):
         self.ans = self.dct
         self.root.destroy()
     
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    def kill(self, v):
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        self.ans = v
+	self.root.destroy()
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def callback(self, f, v):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -220,14 +240,13 @@ class Dialog1(BaseDialog):
 class Dialog2(BaseDialog):
 #------------------------------------------------------------------------------
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    def __init__(self, title):
+    def __init__(self, title, ok="Ok", cancel="Cancel", geo=None):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        BaseDialog.__init__(self, title)
+        BaseDialog.__init__(self, title, ok, cancel, geo)
         self.row = 0
         self.col = 0
         self.maxc = 0
         self.dct = {}
-        self.ans = None
         self.l = []
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -274,8 +293,11 @@ class Dialog2(BaseDialog):
         self.nextRow()
         ok, cancel = (0, self.maxc - 1) if self.maxc % 2 == 0 else (1, self.maxc - 2) 
 
-        ttk.Button(self.root, text="Ok", command=self.finish).grid(column=ok, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
-        ttk.Button(self.root, text="Cancel", command=self.root.destroy).grid(column=cancel, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+	if self.ok:
+            ttk.Button(self.root, text=self.ok, command=self.finish).grid(column=ok, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+
+	if self.cancel:
+            ttk.Button(self.root, text=self.cancel, command=self.root.destroy).grid(column=cancel, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
                 
         self.root.mainloop()
         return self.ans

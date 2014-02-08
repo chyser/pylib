@@ -38,10 +38,25 @@ def main(argv):
         print(cal.title.text)
         print(cal.content.src)
 
-    gcal.getEntries()
+    for ce in gcal.getEntries():
+        print(ce)
         
     oss.exit(0)
         
+
+#-------------------------------------------------------------------------------
+class CalEntry(object):
+#-------------------------------------------------------------------------------
+    def __init__(self):
+        self.cal = ""
+        self.title = ""
+        self.text = ""
+        self.start = None
+        self.end = None
+        
+    def __str__(self):
+        return self.cal + " " + self.title + " " + self.text + " " + str(self.start) + " " + str(self.end)
+
 
 #-------------------------------------------------------------------------------
 class GoogleCalendar(object):
@@ -68,50 +83,37 @@ class GoogleCalendar(object):
         return feed.entry
     
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def getEntries(self):
+    def getEntries(self, start_date=None, end_date=None):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        start_date = '2014-01-01'
-        end_date = '2014-02-01'
-        
-        query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
-        
-        for cal in self.userCalendars():
-            user = cal.content.src
-            print('\n', cal.title.text)
-            feed = self.client.GetCalendarEventFeed(user, q=query, max_results='999')
-            
-            for ae in feed.entry:
-                print('\t%s' % ae.title.text)
-                a = ae.content.text
-                if a:
-                    print(a)
-                for w in ae.when:
-                    print('\t', w.start, w.end)
-                    print('\t', cvtDateTime(w.start), cvtDateTime(w.end))
-                
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def getEntry(self, startDate=None, endDate=None):
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        if startDate is None:
+        if start_date is None:
             start_date = '2014-01-01'
             
-        end_date = '2014-02-01'
+        end_date = '2014-02-28'
         
         query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
+
+        l = []
         
         for cal in self.userCalendars():
             user = cal.content.src
-            print('\n', cal.title.text)
             feed = self.client.GetCalendarEventFeed(user, q=query, max_results='999')
             
             for ae in feed.entry:
-                print('\t%s' % ae.title.text)
+                ce = CalEntry()
+                l.append(ce)
+
+                ce.cal = cal.title.text.encode('ascii', 'ignore')
+                ce.title = ae.title.text.encode('ascii', 'ignore')
+
                 a = ae.content.text
                 if a:
-                    print(a)
+                    ce.text = a.encode('ascii', 'ignore')
+
                 for w in ae.when:
-                    print('\t', w.start, w.end)
-                    print('\t', cvtDateTime(w.start), cvtDateTime(w.end))
+                    ce.start = cvtDateTime(w.start)
+                    ce.end = cvtDateTime(w.end)
+
+        return l
                 
           
 #-------------------------------------------------------------------------------
@@ -123,6 +125,14 @@ def cvtDateTime(s):
         return datetime.datetime.strptime(a, "%Y-%m-%dT%H:%M:%S.%f")
     except ValueError:
         return datetime.datetime.strptime(s, "%Y-%m-%d")
+
+
+#-------------------------------------------------------------------------------
+def DateTime2Str(dt, off=0):
+#-------------------------------------------------------------------------------
+    # 2014-01-15T08:00:00.000-05:00
+    d = dt + datetime.timedelta(off)
+    return "%4d-%02d-%02d" % (d.year, d.month, d.day)
     
         
 if __name__ == "__main__":
