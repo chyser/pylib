@@ -93,11 +93,24 @@ def main(argv):
 class Menu(object):
 #------------------------------------------------------------------------------
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    def __init__(self, title, geo=None):
+    def __init__(self, title, geo=None, **kw):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.ans = None
         self.title = title
 	self.geo = geo
+
+	self.poptions = {
+	    'padx'   : 4,
+	    'pady'   : 0,
+	    'fill'   : tk.BOTH,
+	    'side'   : tk.TOP,
+	    'ipadx'  : 0,
+	    'ipady'  : 0,
+	    'expand' : 1,
+	    'anchor' : tk.N,
+	}
+
+	self.poptions.update(kw)
     
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def syncGeo(self):
@@ -116,9 +129,13 @@ class Menu(object):
 
         for i in a:
             if isinstance(i, tuple):
-                ttk.Button(self.root, text=func(i[0]), command=self.callback(i[1])).pack(expand=1, fill=tk.BOTH, padx=4, pady=0)
+		text = func(i[0]) 
+		command = self.callback(i[1])
             else:
-                ttk.Button(self.root, text=func(i), command=self.callback(i)).pack(expand=1, fill=tk.BOTH, padx=4, pady=0)
+                text = func(i) 
+		command = self.callback(i)
+
+            ttk.Button(self.root, text=text, command=command).pack(**self.poptions)
 
         self.root.mainloop()
         return self.ans
@@ -156,11 +173,35 @@ class BaseDialog(object):
 class Dialog(BaseDialog):
 #------------------------------------------------------------------------------
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    def __init__(self, title, ok='Ok', cancel='Cancel', geo=None, **kw):
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        BaseDialog.__init__(self, title, ok, cancel, geo)
+	self.goptions = {
+	    'padx'   : 4,
+	    'pady'   : 4,
+	    'ipadx'  : 0,
+	    'ipady'  : 0,
+	    'sticky' : tk.E,
+	}
+
+	self.goptions.update(kw)
+    
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def mkEntry(self, f, sv, row):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        ttk.Label(self.root, text=f).grid(column=0, row=row, padx=4, pady=4)
+	if f[0] == '_':
+	    txt = f[1:]
+	    readonly = True
+	else:
+	    txt = f
+	    readonly = False
+
+        ttk.Label(self.root, text=txt).grid(column=0, row=row, **self.goptions)
         sv.set(self.dct[f])
-        tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state='readonly').grid(column=1, row=row, padx=4, pady=4)
+	if readonly:
+	    tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state='readonly').grid(column=1, row=row, **self.goptions)
+	else:
+	    tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN).grid(column=1, row=row, **self.goptions)
         self.l.append(self.callback(f, sv))
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -174,8 +215,8 @@ class Dialog(BaseDialog):
             if isinstance(dct[f], bool):
                 bv = tk.BooleanVar()
                 bv.set(dct[f])
-                ttk.Label(self.root, text=f).grid(column=0, row=row, padx=4, pady=4)
-                ttk.Checkbutton(self.root, variable=bv).grid(column=1, row=row, padx=4, pady=4)
+                ttk.Label(self.root, text=f).grid(column=0, row=row, **self.goptions)
+                ttk.Checkbutton(self.root, variable=bv).grid(column=1, row=row, **self.goptions)
                 self.l.append(self.callback(f, bv)) 
 
             elif isinstance(dct[f], int):

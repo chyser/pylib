@@ -16,7 +16,8 @@ import time
 import datetime
 import webbrowser
 
-from multiprocessing import Process, Value
+import multiprocessing as mp
+
 from collections import OrderedDict
 
 
@@ -27,13 +28,11 @@ def main(argv):
     """
     args, opts = oss.gopt(argv[1:], [], [], main.__doc__ + __doc__)
     
-    bail = Value('i', 0)
-    sync = Value('i', 1)
-    p = Process(target=MenuThread, args=(bail,sync))
-    p.start()
+    bail = mp.Value('i', 0)
+    sync = mp.Value('i', 1)
+    mp.Process(target=MenuThread, args=(bail, sync)).start()
 
     gc = gcal.GoogleCalendar(args[0], args[1])
-
 
     entries = []
 
@@ -47,6 +46,8 @@ def main(argv):
 
         if calchk == 30 or sync.value:
             entries = []
+
+	    print('--------------------------------')
 	    print("checking cal", time.ctime())
 	    for ce in gc.getEntries(gcal.DateTime2Str(dt), gcal.DateTime2Str(dt, 1)):
 	        print(ce)
@@ -61,34 +62,32 @@ def main(argv):
 	    td = ce.start - dt
 	    secs = td.total_seconds()
 
-	    if -30 < secs <= 30:
-                p = Process(target=DlgThread, args=('Event', ce))
-		p.start()
+	    dur = (ce.end - ce.start).total_seconds()
+	    one = dur == 0 or dur == 60*60*24
 
+	    if -30 < secs <= 30:
+                mp.Process(target=DlgThread, args=('Event', ce)).start()
 	        print("timer went off")
 		print(ce)
 
-	    elif 540 < secs <= 600:
-                p = Process(target=DlgThread, args=('Event in 10 Minutes', ce))
-		p.start()
+	    elif not one and 540 < secs <= 600:
+                mp.Process(target=DlgThread, args=('Event in 10 Minutes', ce)).start()
 	        print("timer in 10 mins")
 
-	    elif 1140 < secs <= 1200:
-                p = Process(target=DlgThread, args=('Event in 20 Minutes', ce))
-		p.start()
+	    elif not one and 1140 < secs <= 1200:
+                mp.Process(target=DlgThread, args=('Event in 20 Minutes', ce)).start()
 	        print("timer in 20 mins")
 
-	    elif 240 < secs <= 300:
-                p = Process(target=DlgThread, args=('Event in 5 Minutes', ce))
-		p.start()
+	    elif not one and 240 < secs <= 300:
+                mp.Process(target=DlgThread, args=('Event in 5 Minutes', ce)).start()
 	        print("timer in 5 mins")
 
 	    elif first:
 	        if ce.start <= dt <= ce.end:
-                     p = Process(target=DlgThread, args=('Event in Progress', ce))
-		     p.start()
-	        first = False
+                     mp.Process(target=DlgThread, args=('Event in Progress', ce)).start()
 
+
+	first = False
 
         t = 60 - dt.second
 	if t <= 0: t = 60
@@ -103,27 +102,35 @@ def main(argv):
 #-------------------------------------------------------------------------------
 def DlgThread(title, ce):
 #-------------------------------------------------------------------------------
-    dct = OrderedDict([('Time', time.ctime()), ('Calendar', ce.cal), ('Title',  ce.title), ('Text', ce.text), ('Start', str(ce.start)), ('End', str(ce.end))])
+    dct = OrderedDict([('_Time', time.ctime()), ('_Calendar', ce.cal), ('_Title',  ce.title), 
+                       ('_Text', ce.text), ('_Start', str(ce.start)), ('_End', str(ce.end)), ('Sleep (mins)', '1')])
 
     t = title
     i = 0
     while 1:
-        dlg = menu.Dialog("Event -- %s" % t, ok="Sleep 1 Min", cancel="Acknowledge")
+        dlg = menu.Dialog("Event -- %s" % t, ok="Sleep", cancel="Acknowledge")
         a = dlg.run(dct)
 	if not a:
 	    break
 
-	time.sleep(60)
-	i += 1
-	t = title + '-- Sleep %d mins' % i
+        try:
+	    mins = float(dct['Sleep (mins)'])
+	except ValueError:
+	    mins = 1
+
+        secs = int(round(60*mins))
+	time.sleep(secs)
+	i += mins 
+
+	t = title + '-- Sleep %3.0f mins' % i
 
 
 #-------------------------------------------------------------------------------
 def MenuThread(bail, sync):
 #-------------------------------------------------------------------------------
-    m = menu.Menu("G Calendar Notifier")
+    m = menu.Menu("Google Calendar Notifier")
     while 1:
-        a = m.run([("Open Google Calendar", 0), ('Sync to Calendar', 2), ('Exit', 1)])
+        a = m.run([("Open Google Calendar", 0), ('Sync to Calendar', 2), ('Config', 3), ('Exit', 1)])
 
 	if a == 1:
 	    bail.value = 1
