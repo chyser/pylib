@@ -183,7 +183,7 @@ class Dialog(BaseDialog):
             'pady'   : 4,
             'ipadx'  : 0,
             'ipady'  : 0,
-            'sticky' : tk.E,
+            'sticky' : tk.E + tk.W,
         }
         self.goptions.update(kw)
         
@@ -230,10 +230,8 @@ class Dialog(BaseDialog):
         ttk.Label(self.root, text=txt).grid(column=0, row=row, **self.goptions)
         sv.set(self.dct[f])
         
-        if readonly:
-            tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state='readonly').grid(column=1, row=row, **self.goptions)
-        else:
-            tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN).grid(column=1, row=row, **self.goptions)
+        state = 'readonly' if readonly else 'normal'
+        tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state=state).grid(column=1, row=row, **self.goptions)
             
         self.l.append(self.__callback(f, sv))
         
