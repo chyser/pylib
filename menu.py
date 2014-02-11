@@ -25,7 +25,10 @@ def main(argv):
 
     a = []
     for i in range(7):
-        a.append((i, i))
+        if i == 3:
+            a.append(None)
+        else:
+            a.append((i, i))
     
     
     m = Menu("Select Int")
@@ -40,11 +43,11 @@ def main(argv):
     
         elif v == 1:
             d = Dialog("Boo")
-            x = d.run({'s':'boo', 'b': True, 'c': 3.4})
+            x = d.run({'s':'boo', 'b': True, '1' : None, 'c': 3.4})
             if x:
                 print(x['s'], x['b'], x['c'])
     
-        elif v == 3:
+        elif v == 4:
     
             d = Dialog1("cool")
     
@@ -83,7 +86,7 @@ def main(argv):
                 print(ans['v3'])
                 print(ans['v4'])
     
-        elif v == 4:
+        elif v == 6:
             break    
     
     oss.exit(0)
@@ -124,8 +127,11 @@ class Menu(object):
         self.root.title(self.title)
 
         for i in a:
-            text, command = (func(i[0]), self.__callback(i[1])) if isinstance(i, tuple) else (func(i), self.__callback(i))
-            ttk.Button(self.root, text=text, command=command).pack(**self.poptions)
+            if i is None:
+                ttk.Separator().pack(expand=1, fill=tk.BOTH, padx=4, pady=6, anchor='center')
+            else:
+                text, command = (func(i[0]), self.__callback(i[1])) if isinstance(i, tuple) else (func(i), self.__callback(i))
+                ttk.Button(self.root, text=text, command=command).pack(**self.poptions)
 
         self.root.mainloop()
         return self.ans
@@ -195,7 +201,9 @@ class Dialog(BaseDialog):
 
         row = 0
         for f in dct:
-            if isinstance(dct[f], bool):
+            if dct[f] is None:
+                ttk.Separator().grid(column=0, columnspan=2, row=row, **self.goptions)
+            elif isinstance(dct[f], bool):
                 bv = tk.BooleanVar()
                 bv.set(dct[f])
                 ttk.Label(self.root, text=f).grid(column=0, row=row, **self.goptions)
@@ -230,8 +238,9 @@ class Dialog(BaseDialog):
         ttk.Label(self.root, text=txt).grid(column=0, row=row, **self.goptions)
         sv.set(self.dct[f])
         
+        width = len(str(self.dct[f]))
         state = 'readonly' if readonly else 'normal'
-        tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state=state).grid(column=1, row=row, **self.goptions)
+        tk.Entry(self.root, width=width, textvariable=sv, relief=tk.SUNKEN, state=state).grid(column=1, row=row, **self.goptions)
             
         self.l.append(self.__callback(f, sv))
         
@@ -307,10 +316,8 @@ class Dialog2(BaseDialog):
         sv = tk.StringVar()
         sv.set(str(default))
         
-        if ro:
-            tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state='readonly').grid(column=self.col, row=self.row, padx=4, pady=4)
-        else:
-            tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN).grid(column=self.col, row=self.row, padx=4, pady=4)
+        state = 'readonly' if ro else 'normal'
+        tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state=state).grid(column=self.col, row=self.row, padx=4, pady=4)
         
         self.l.append(self.__callback(name, sv))
         self.col += 1

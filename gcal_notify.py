@@ -94,7 +94,7 @@ def main(argv):
 def DlgThread(title, ce):
 #-------------------------------------------------------------------------------
     dct = OrderedDict([('_Time', time.ctime()), ('_Calendar', ce.cal), ('_Title',  ce.title), 
-        ('_Text', ce.text), ('_Start', str(ce.start)), ('_End', str(ce.end)), ('Sleep (mins)', '1')])
+        ('_Text', ce.text), ('_Start', str(ce.start)), ('_End', str(ce.end)), ('1', None), ('Sleep (mins)', '1')])
 
     t = title;  tmins = 0;  geo = None
     while 1:
