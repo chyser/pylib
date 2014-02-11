@@ -121,19 +121,19 @@ class Menu(object):
     def run(self, a, func=str):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.root = tk.Tk()
-	if not self.geo:
-	    self.geo = "+200+200"
+        if not self.geo:
+            self.geo = "+200+200"
 	    
-	self.root.geometry(self.geo)
+        self.root.geometry(self.geo)
         self.root.title(self.title)
 
         for i in a:
             if isinstance(i, tuple):
-		text = func(i[0]) 
-		command = self.callback(i[1])
+                text = func(i[0]) 
+                command = self.callback(i[1])
             else:
                 text = func(i) 
-		command = self.callback(i)
+                command = self.callback(i)
 
             ttk.Button(self.root, text=text, command=command).pack(**self.poptions)
 
@@ -159,12 +159,12 @@ class BaseDialog(object):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.root = tk.Tk()
         self.root.title(title)
-	self.ans = None
-	self.ok = ok
-	self.cancel = cancel
+        self.ans = None
+        self.ok = ok
+        self.cancel = cancel
 
-	self.geo = geo if geo is not None else "+200+200"
-	self.root.geometry(self.geo)
+        self.geo = geo if geo is not None else "+200+200"
+        self.root.geometry(self.geo)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def syncGeo(self):
@@ -184,34 +184,36 @@ class Dialog(BaseDialog):
     def __init__(self, title, ok='Ok', cancel='Cancel', geo=None, **kw):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         BaseDialog.__init__(self, title, ok, cancel, geo)
-	self.goptions = {
-	    'padx'   : 4,
-	    'pady'   : 4,
-	    'ipadx'  : 0,
-	    'ipady'  : 0,
-	    'sticky' : tk.E,
-	}
-
-	self.goptions.update(kw)
+        self.goptions = {
+            'padx'   : 4,
+            'pady'   : 4,
+            'ipadx'  : 0,
+            'ipady'  : 0,
+            'sticky' : tk.E,
+        }
     
+        self.goptions.update(kw)
+        
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def mkEntry(self, f, sv, row):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-	if f[0] == '_':
-	    txt = f[1:]
-	    readonly = True
-	else:
-	    txt = f
-	    readonly = False
-
+        if f[0] == '_':
+            txt = f[1:]
+            readonly = True
+        else:
+            txt = f
+            readonly = False
+    
         ttk.Label(self.root, text=txt).grid(column=0, row=row, **self.goptions)
         sv.set(self.dct[f])
-	if readonly:
-	    tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state='readonly').grid(column=1, row=row, **self.goptions)
-	else:
-	    tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN).grid(column=1, row=row, **self.goptions)
+        
+        if readonly:
+            tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state='readonly').grid(column=1, row=row, **self.goptions)
+        else:
+            tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN).grid(column=1, row=row, **self.goptions)
+            
         self.l.append(self.callback(f, sv))
-
+    
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def run(self, dct):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -226,13 +228,10 @@ class Dialog(BaseDialog):
                 ttk.Label(self.root, text=f).grid(column=0, row=row, **self.goptions)
                 ttk.Checkbutton(self.root, variable=bv).grid(column=1, row=row, **self.goptions)
                 self.l.append(self.callback(f, bv)) 
-
             elif isinstance(dct[f], int):
                 self.mkEntry(f, tk.IntVar(), row)
-
             elif isinstance(dct[f], float):
                 self.mkEntry(f, tk.DoubleVar(), row)
-
             else:
                 self.mkEntry(f, tk.StringVar(), row)
 
@@ -250,21 +249,20 @@ class Dialog(BaseDialog):
         for i in self.l:
             i()
         self.ans = self.dct
-	self.syncGeo()
+        self.syncGeo()
         self.root.destroy()
     
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def kill(self, v):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.ans = v
-	self.root.destroy()
+        self.root.destroy()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def callback(self, f, v):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         def cb():
             self.dct[f] = v.get()
-
         return cb
             
 
@@ -324,10 +322,12 @@ class Dialog2(BaseDialog):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         sv = tk.StringVar()
         sv.set(str(default))
+        
         if ro:
             tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN, state='readonly').grid(column=self.col, row=self.row, padx=4, pady=4)
         else:
             tk.Entry(self.root, textvariable=sv, relief=tk.SUNKEN).grid(column=self.col, row=self.row, padx=4, pady=4)
+        
         self.l.append(self.callback(name, sv))
         self.col += 1
 
@@ -343,10 +343,10 @@ class Dialog2(BaseDialog):
         self.nextRow()
         ok, cancel = (0, self.maxc - 1) if self.maxc % 2 == 0 else (1, self.maxc - 2) 
 
-	if self.ok:
+        if self.ok:
             ttk.Button(self.root, text=self.ok, command=self.finish).grid(column=ok, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
 
-	if self.cancel:
+        if self.cancel:
             ttk.Button(self.root, text=self.cancel, command=self.root.destroy).grid(column=cancel, row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
                 
         self.root.mainloop()
@@ -358,7 +358,7 @@ class Dialog2(BaseDialog):
         for i in self.l:
             i()
         self.ans = self.dct
-	self.syncGeo()
+        self.syncGeo()
         self.root.destroy()
         
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -366,7 +366,6 @@ class Dialog2(BaseDialog):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         def cb():
             self.dct[f] = v.get()
-
         return cb
 
         
