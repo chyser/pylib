@@ -107,11 +107,14 @@ def DlgThread(title, ce):
 
     t = title
     i = 0
+    geo = None
     while 1:
-        dlg = menu.Dialog("Event -- %s" % t, ok="Sleep", cancel="Acknowledge")
+        dlg = menu.Dialog("Event -- %s" % t, geo=geo, ok="Sleep", cancel="Acknowledge")
         a = dlg.run(dct)
 	if not a:
 	    break
+
+        geo = dlg.getGeo()
 
         try:
 	    mins = float(dct['Sleep (mins)'])

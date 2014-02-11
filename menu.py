@@ -163,10 +163,18 @@ class BaseDialog(object):
 	self.ok = ok
 	self.cancel = cancel
 
-	if geo is None:
-	    geo="+200+200"
+	self.geo = geo if geo is not None else "+200+200"
+	self.root.geometry(self.geo)
 
-	self.root.geometry(geo)
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    def syncGeo(self):
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        self.geo = self.root.geometry()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    def getGeo(self):
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        return self.geo
 
 
 #------------------------------------------------------------------------------
@@ -242,6 +250,7 @@ class Dialog(BaseDialog):
         for i in self.l:
             i()
         self.ans = self.dct
+	self.syncGeo()
         self.root.destroy()
     
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -349,6 +358,7 @@ class Dialog2(BaseDialog):
         for i in self.l:
             i()
         self.ans = self.dct
+	self.syncGeo()
         self.root.destroy()
         
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
