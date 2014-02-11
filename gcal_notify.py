@@ -114,7 +114,7 @@ def DlgThread(title, ce):
         time.sleep(secs)
         tmins += mins 
 
-        t = title + '-- Sleep %3.0f mins' % tmins
+        t = title + '-- Sleep %03.0f mins' % tmins
 
 
 #-------------------------------------------------------------------------------
@@ -134,6 +134,13 @@ def MenuThread(bail, sync):
     
         elif a == 2:
            sync.value = 1 
+           
+###        elif a == 3:
+###            OrderedDict([(
+###            dlg = menu.Dialog("Config"} 
+###            a = dlg.run(dct)
+###            if not a:
+###                break
 
            
 if __name__ == '__main__':
