@@ -101,8 +101,8 @@ class Menu(object):
         self.ans = None
         self.title = title
         self.geo = geo if geo else "+200+200"
-	self.cols = cols
-	self.quit = quit
+        self.cols = cols
+        self.quit = quit
         
         self.goptions = {
             'padx'   : 4,
@@ -119,18 +119,26 @@ class Menu(object):
         self.geo = self.root.geometry()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    def getGeo(self, location=False):
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        if location:
+            l = self.geo.index('+')
+            return self.geo[l:]
+        return self.geo
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def run(self, a, func=str):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.root = tk.Tk()
         self.root.geometry(self.geo)
         self.root.title(self.title)
 
-	la, ex = divmod(len(a), self.cols)
-	if ex:
-	    self.cols += 1
+        la, ex = divmod(len(a), self.cols)
+        if ex:
+            self.cols += 1
 
         for idx, i in enumerate(a):
-	    col, row = divmod(idx, la)
+            col, row = divmod(idx, la)
             if i:
                 text, command = (func(i[0]), self.__callback(i[1])) if isinstance(i, tuple) else (func(i), self.__callback(i))
                 ttk.Button(self.root, text=text, command=command).grid(column=col, row=row, **self.goptions)

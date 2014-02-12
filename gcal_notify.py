@@ -42,8 +42,8 @@ def main(argv):
         if bail.value:
             break
 
-	if rp.poll():
-	    cfg = rp.recv()
+        if rp.poll():
+            cfg = rp.recv()
 
         dt = datetime.datetime.now()
 
@@ -72,16 +72,15 @@ def main(argv):
                 mp.Process(target=DlgThread, args=('Event', ce)).start()
 
             else:
-		for i in cfg.timechk:
-		    ss = i * 60
-		    if ss - 60 < secs <= ss:
+                for i in cfg.timechk:
+                    ss = i * 60
+                    if ss - 60 < secs <= ss:
                         mp.Process(target=DlgThread, args=('Event in %d Minutes' % i, ce)).start()
-			break
+                        break
                 else:
                     if first and ce.start <= dt <= ce.end:
                         mp.Process(target=DlgThread, args=('Event in Progress', ce)).start()
-    
-    
+        
         first = False
     
         t = 60 - dt.second
@@ -150,19 +149,18 @@ def MenuThread(bail, sync, sp):
            sync.value = 1 
            
         elif a == 3:
-
             dct = OrderedDict()
             for i in (5, 10, 15, 20, 25, 30):
-		  dct['%d Minute Warning' % i] = i in cfg.timechk
+                dct['%d Minute Warning' % i] = i in cfg.timechk
 
-            dlg = menu.Dialog("Config") 
+            dlg = menu.Dialog("Config", geo=m.getGeo(True)) 
             a = dlg.run(dct)
             if not a:
-	        cfg.timechk = {}
+                cfg.timechk = {}
                 for i in (5, 10, 15, 20, 25, 30):
                     if dct['%d Minute Warning' % i]:
-		        cfg.timechk.add(i)
-		sp.send(cfg)
+                        cfg.timechk.add(i)
+            sp.send(cfg)
                 
            
 if __name__ == '__main__':
