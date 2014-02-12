@@ -24,14 +24,14 @@ def main(argv):
     args, opts = oss.gopt(argv[1:], [], [], main.__doc__ + __doc__)
 
     a = []
-    for i in range(7):
+    for i in range(13):
         if i == 3:
             a.append(None)
         else:
             a.append((i, i))
     
     
-    m = Menu("Select Int")
+    m = Menu("Select Int", quit='Done', cols=3)
     while 1:
         v = m.run(a)
         print("sel:", v)
@@ -86,7 +86,7 @@ def main(argv):
                 print(ans['v3'])
                 print(ans['v4'])
     
-        elif v == 6:
+        elif v is None:
             break    
     
     oss.exit(0)
@@ -96,23 +96,22 @@ def main(argv):
 class Menu(object):
 #------------------------------------------------------------------------------
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    def __init__(self, title, geo=None, **kw):
+    def __init__(self, title, geo=None, quit='', cols=1, **kw):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         self.ans = None
         self.title = title
         self.geo = geo if geo else "+200+200"
+	self.cols = cols
+	self.quit = quit
         
-        self.poptions = {
+        self.goptions = {
             'padx'   : 4,
             'pady'   : 0,
-            'fill'   : tk.BOTH,
-            'side'   : tk.TOP,
             'ipadx'  : 0,
             'ipady'  : 0,
-            'expand' : 1,
-            'anchor' : tk.N,
+            'sticky' : tk.E + tk.W,
         }
-        self.poptions.update(kw)
+        self.goptions.update(kw)
     
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     def syncGeo(self):
@@ -126,12 +125,19 @@ class Menu(object):
         self.root.geometry(self.geo)
         self.root.title(self.title)
 
-        for i in a:
-            if i is None:
-                ttk.Separator().pack(expand=1, fill=tk.BOTH, padx=4, pady=6, anchor='center')
-            else:
+	la, ex = divmod(len(a), self.cols)
+	if ex:
+	    self.cols += 1
+
+        for idx, i in enumerate(a):
+	    col, row = divmod(idx, la)
+            if i:
                 text, command = (func(i[0]), self.__callback(i[1])) if isinstance(i, tuple) else (func(i), self.__callback(i))
-                ttk.Button(self.root, text=text, command=command).pack(**self.poptions)
+                ttk.Button(self.root, text=text, command=command).grid(column=col, row=row, **self.goptions)
+
+
+        if self.quit:
+            ttk.Button(self.root, text=self.quit, command=self.__callback(None)).grid(column=0, columnspan=self.cols, row=la, sticky=tk.N+tk.S+tk.E+tk.W)
 
         self.root.mainloop()
         return self.ans

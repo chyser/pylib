@@ -29,15 +29,21 @@ def main(argv):
     args, opts = oss.gopt(argv[1:], [], [], main.__doc__ + __doc__)
     
     bail = mp.Value('i', 0);  sync = mp.Value('i', 1)
-    mp.Process(target=MenuThread, args=(bail, sync)).start()
+
+    sp, rp = mp.Pipe()
+    mp.Process(target=MenuThread, args=(bail, sync, sp)).start()
 
     gc = gcal.GoogleCalendar(args[0], args[1])
 
+    cfg = Config()
     entries = []; calchk = 0;  first = True
     
     while 1:
         if bail.value:
             break
+
+	if rp.poll():
+	    cfg = rp.recv()
 
         dt = datetime.datetime.now()
 
@@ -64,19 +70,17 @@ def main(argv):
     
             if not mult and -30 < secs <= 30:
                 mp.Process(target=DlgThread, args=('Event', ce)).start()
+
+            else:
+		for i in cfg.timechk:
+		    ss = i * 60
+		    if ss - 60 < secs <= ss:
+                        mp.Process(target=DlgThread, args=('Event in %d Minutes' % i, ce)).start()
+			break
+                else:
+                    if first and ce.start <= dt <= ce.end:
+                        mp.Process(target=DlgThread, args=('Event in Progress', ce)).start()
     
-            elif 240 < secs <= 300:
-                mp.Process(target=DlgThread, args=('Event in 5 Minutes', ce)).start()
-    
-            elif 540 < secs <= 600:
-                mp.Process(target=DlgThread, args=('Event in 10 Minutes', ce)).start()
-    
-            elif 1140 < secs <= 1200:
-                mp.Process(target=DlgThread, args=('Event in 20 Minutes', ce)).start()
-    
-            elif first:
-                if ce.start <= dt <= ce.end:
-                    mp.Process(target=DlgThread, args=('Event in Progress', ce)).start()
     
         first = False
     
@@ -118,9 +122,19 @@ def DlgThread(title, ce):
 
 
 #-------------------------------------------------------------------------------
-def MenuThread(bail, sync):
+class Config(object):
+#-------------------------------------------------------------------------------
+    def __init__(self):
+        self.timechk = {5, 10, 15, 20, 25, 30}
+
+
+#-------------------------------------------------------------------------------
+def MenuThread(bail, sync, sp):
 #-------------------------------------------------------------------------------
     m = menu.Menu("Google Calendar Notifier")
+
+    cfg = Config()
+    sp.send(cfg)
     
     while 1:
         a = m.run([("Open Google Calendar", 0), ('Sync to Calendar', 2), ('Config', 3), ('Exit', 1)])
@@ -135,13 +149,21 @@ def MenuThread(bail, sync):
         elif a == 2:
            sync.value = 1 
            
-###        elif a == 3:
-###            OrderedDict([(
-###            dlg = menu.Dialog("Config"} 
-###            a = dlg.run(dct)
-###            if not a:
-###                break
+        elif a == 3:
 
+            dct = OrderedDict()
+            for i in (5, 10, 15, 20, 25, 30):
+		  dct['%d Minute Warning' % i] = i in cfg.timechk
+
+            dlg = menu.Dialog("Config") 
+            a = dlg.run(dct)
+            if not a:
+	        cfg.timechk = {}
+                for i in (5, 10, 15, 20, 25, 30):
+                    if dct['%d Minute Warning' % i]:
+		        cfg.timechk.add(i)
+		sp.send(cfg)
+                
            
 if __name__ == '__main__':
     main(oss.argv)
