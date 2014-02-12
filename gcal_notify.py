@@ -17,6 +17,7 @@ import datetime
 import webbrowser
 
 import multiprocessing as mp
+import winsound as ws
 
 from collections import OrderedDict
 
@@ -102,6 +103,7 @@ def DlgThread(title, ce):
     t = title;  tmins = 0;  geo = None
     while 1:
         dlg = menu.Dialog("Event -- %s" % t, geo=geo, ok="Sleep", cancel="Acknowledge")
+        ws.PlaySound('SystemHand', ws.SND_ALIAS)
         a = dlg.run(dct)
         if not a:
             break
