@@ -21,7 +21,13 @@ import winsound as ws
 
 from collections import OrderedDict
 
-
+try:
+    import tkinter as tk
+    from tkinter import ttk
+except ImportError:
+    import Tkinter as tk
+    import ttk
+    
 PAUSE_COUNT = 5
 CHECK_COUNT = 30 
 
@@ -201,22 +207,31 @@ def MenuThread(sp, sync):
             sync.value = 1
            
         elif a == 3:
-            dct = {
-                'Notifications (mins)' : ' '.join([str(s) for s in cfg.timechk]),
-                'Default Sleep Setting' : cfg.defaultSleep,
-            }
-
-            dlg = menu.Dialog("Config", geo=m.getGeo(True)) 
-            a = dlg.run(dct)
-            
-            if not a:
-                try:
-                    cfg.timechk = [int(x) for x in dct['Notifications (mins)'].split()]
-                    cfg.defaultSleep = dct['Default Sleep Setting']
-                    sp.send(cfg)
-                except ValueError:
-                    print('Error:', dct['Notifications (mins)'])
+            while 1:
+                dct = {
+                    'Notifications (mins)' : ' '.join([str(s) for s in cfg.timechk]),
+                    'Default Sleep Setting' : cfg.defaultSleep,
+                }
+                        
+    
+                dlg = menu.Dialog("Config", geo=m.getGeo(True)) 
+                a = dlg.run(dct)
                 
+                if a:
+                    try:
+                        timechk = [int(x) for x in dct['Notifications (mins)'].split()]
+                        cfg.defaultSleep = str(float(dct['Default Sleep Setting']))
+                        cfg.timechk = timechk
+                        sp.send(cfg)
+                    except ValueError as ex:
+                        print('Error:', dct['Notifications (mins)'])
+                        menu.MsgError('Incorrect Config Options', str(ex))
+                        continue
+                        
+                break
+                
+    print("GUI ending")
+    
            
 if __name__ == '__main__':
     main(oss.argv)

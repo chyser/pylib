@@ -15,6 +15,7 @@ try:
 except ImportError:
     import Tkinter as tk
     import ttk
+    import tkMessageBox as tkm
     
 #-------------------------------------------------------------------------------
 def main(argv):
@@ -34,6 +35,9 @@ def main(argv):
     m = Menu("Select Int", quit='Done', cols=3)
     while 1:
         v = m.run(a)
+        
+        MsgError('test', 'error')
+        
         print("sel:", v)
     
         if v == 2:
@@ -373,6 +377,38 @@ class Dialog2(BaseDialog):
             self.dct[f] = v.get()
         return cb
 
+
+#-------------------------------------------------------------------------------
+def MsgError(title, msg):
+#-------------------------------------------------------------------------------
+    root = tk.Tk()
+    root.withdraw()
+    a = tkm.showerror(title, msg)
+    root.destroy()
+    return a
+    
+    
+#-------------------------------------------------------------------------------
+def MsgWarning(title, msg):
+#-------------------------------------------------------------------------------
+    root = tk.Tk()
+    root.withdraw()
+    a = tkm.showwarning(title, msg)
+    root.destroy()
+    return a
+
+    
+#-------------------------------------------------------------------------------
+def MsgInfo(title, msg):
+#-------------------------------------------------------------------------------
+    root = tk.Tk()
+    root.withdraw()
+    a = tkm.showInfo(title, msg)
+    root.destroy()
+    return a
+    
+    
+    
         
 if __name__ == "__main__":
     main(oss.argv)
