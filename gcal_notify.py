@@ -17,7 +17,21 @@ import datetime
 import webbrowser
 
 import multiprocessing as mp
-import winsound as ws
+
+try:
+    import winsound as ws
+except ImportError:
+    class WS(object):
+        def __init__(self):
+	    self.SND_ALIAS = 0
+            self.SND_ASYNC = 0
+
+        def PlaySound(*args):
+	    pass
+
+
+    ws = WS()
+
 
 from collections import OrderedDict
 
@@ -117,6 +131,7 @@ def main(argv):
             pass
         
     oss.exit(0)
+
 
 class EarlyOut(Exception): pass    
 
