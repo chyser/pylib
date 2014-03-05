@@ -88,7 +88,8 @@ class GoogleCalendar(object):
         if start_date is None:
             start_date = '2014-01-01'
             
-        end_date = '2014-02-28'
+        if end_date is None:
+            end_date = '2014-02-28'
         
         query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
 

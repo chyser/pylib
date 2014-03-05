@@ -49,9 +49,12 @@ CHECK_COUNT = 30
 #-------------------------------------------------------------------------------
 def main(argv):
 #-------------------------------------------------------------------------------
-    """ usage: 
+    """ usage: gcal_notify [gcal user id} [gcal password]
     """
     args, opts = oss.gopt(argv[1:], [], [], main.__doc__ + __doc__)
+    
+    if len(args) != 2:
+        opts.usage('Error: Need to specify account and password info')
     
     ## setup interface and comms
     sp, rp = mp.Pipe()
@@ -89,6 +92,7 @@ def main(argv):
             found = False
             
             if -30 < secs <= 30:
+                print('Main Event:', ce)
                 mp.Process(target=DlgThread, args=('Event', ce, cfg)).start()
                 found = True
                 
@@ -96,6 +100,7 @@ def main(argv):
                 for tc in cfg.timechk:
                     ss = tc * 60
                     if ss - 60 < secs <= ss:
+                        print('Coming Event:', ce)
                         mp.Process(target=DlgThread, args=('Event in %d Minutes' % tc, ce, cfg)).start()
                         found = True
                         break
@@ -103,6 +108,7 @@ def main(argv):
             ## if first time and not notified, see if event already in progress                
             if first and not found:
                 if ce.start <= dt <= ce.end:
+                    print('In Progress Event:', ce)
                     mp.Process(target=DlgThread, args=('Event in Progress', ce, cfg)).start()
                 
         first = False
